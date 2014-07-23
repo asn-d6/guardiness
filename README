@@ -1,0 +1,72 @@
+==tl;dr==
+
+Set of scripts to calculate the guard fraction of Tor entry guards as
+detailed in section "1.3. Age of guard as a factor on guard
+probabilities" of proposal 236.
+
+==Overview==
+
+The scripts are meant to be run periodically and fed with historical
+consensus data.
+
+Specifically, the databaser script is responsible for reading past
+consensuses and updating an sqlite3 database. Then the guardfraction
+script reads the database and outputs a guardfraction file that is
+meant to be read by Tor.
+
+Directory authority operators are supposed to feed the databaser
+script with 3 months worth of consensuses during initial
+deployment. Then, before every voting period, the dirauth operators
+should also feed the databaser script with the latest consensus. A
+cron script will be used to do this.
+
+==Example usage==
+
+Put all your md consensuses in consensus_dir/. You can get yours from
+CollecTor. For example:
+$ mkdir guardfraction_data
+$ cd guardfraction_data
+$ mkdir consensus_dir summary_dir
+$ cd consensus_dir
+$ wget https://collector.torproject.org/archive/relay-descriptors/microdescs/microdescs-2014-07.tar.xz
+$ tar xvf microdescs-2014-07.tar.xz
+$ find microdescs-2014-07/consensus-microdesc/*/* -exec mv {} . \; # Get all consensuses in cwd
+
+And now that we have all these consensuses saved locally, it's time to run the
+guardfraction scripts:
+
+$ python databaser.py --first-time guardfraction_data/consensus_dir/ 999
+$ python guardfraction.py 999
+
+Now you should have a file named 'guardfraction.output' in the cwd that
+is meant to be read by little-t-tor.
+
+==Dependencies==
+
+stem is needed.
+
+==Output file format==
+
+This is the format of the guardfraction output file:
+
+        written-at <date and time>
+        n-inputs <number of consesuses parsed> <number of months considered>
+
+        guard-seen <guard fpr 1> <guardfraction percentage> <number of consensus appearances>
+        guard-seen <guard fpr 2> <guardfraction percentage> <number of consensus appearances>
+        guard-seen <guard fpr 3> <guardfraction percentage> <number of consensus appearances>
+        guard-seen <guard fpr 4> <guardfraction percentage> <number of consensus appearances>
+        guard-seen <guard fpr 5> <guardfraction percentage> <number of consensus appearances>
+        ...
+
+for example here is a guardfraction output file for 9 consensuses over the past 3 months:
+
+		written-at 2014-09-23 22:48:00.574353
+		n-inputs 9 3
+		guard-seen 4BD87C848E4DB3E10B759B8DC18D1294A715DAC4 100 9
+		guard-seen D0EDB47BEAD32D26D0A837F7D5357EC3AD3B8777 100 9
+		guard-seen 95B32375D0AC1CF6ABE3E1A8584DD5ADB3FACA60 100 9
+        guard-seen 09BF459AB9702BC8F5EC9790D0812B0DEA8154D7 56 5
+        guard-seen C9EBD47AEE8B7DCE24288953FA3518A56D57407D 33 3
+        guard-seen BFB650BE1E42C874D97E34B45A2916FF94212600 33 3
+        guard-seen 40D3E01ACC8C941788AC679F42F3C131B6E31933 11 1

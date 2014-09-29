@@ -67,6 +67,8 @@ def parse_cmd_args():
                         help="Consider only consensuses of the past max_months.")
     parser.add_argument("--db-file", type=str, default=SQLITE_DB_FILE,
                         help="Path to where the database file should be created .")
+    parser.add_argument("--schema-file", type=str, default=SQLITE_DB_SCHEMA,
+                        help="Path to the database schema file.")
     parser.add_argument("--delete-expired", action="store_true", default=False,
                         help="Delete consensus files older than max_months.")
     parser.add_argument("--delete-imported", action="store_true", default=False,
@@ -91,6 +93,7 @@ def main():
 
     # Unwrap CLI arguments
     db_file = args.db_file
+    schema_file = args.schema_file
     consensus_dir = args.consensus_dir
     delete_expired = args.delete_expired
     delete_imported = args.delete_imported
@@ -99,11 +102,13 @@ def main():
 
     # Initialize sqlite3 database.
     db_conn, db_cursor = sqlite_db.init_db(db_file,
-                                           SQLITE_DB_SCHEMA if first_time else None)
+                                           schema_file if first_time else None)
 
     # Parse all consensus files
     import_consensus_dir_to_db(db_cursor, consensus_dir, max_months,
                                delete_expired, delete_imported)
+
+    logging.info("Done! Wrote database file at %s.", db_file)
 
     # Commit database changes and close the file. We are done!
     db_conn.commit()

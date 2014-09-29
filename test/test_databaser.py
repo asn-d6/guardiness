@@ -1,6 +1,7 @@
 import unittest
 import os
 
+import stem
 from stem.descriptor import parse_file, DocumentHandler
 
 import guardiness.sqlite_db as sqlite_db
@@ -37,7 +38,7 @@ def parse_consensuses_naive_way(consensus_dir):
         # * If we see it for the first time, initialize its counter to 1.
         # * If we've seen it before, increment its counter by one.
         for router in consensus.routers.values():
-            if 'Guard' in router.flags: # It's a guard
+            if stem.Flag.GUARD in router.flags: # It's a guard
                 if router.fingerprint not in guards_dict:
                     # First time we see this guard.
                     guards_dict[router.fingerprint] = 1

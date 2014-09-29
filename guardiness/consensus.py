@@ -1,6 +1,7 @@
 import logging
 import datetime
 
+import stem
 from stem.descriptor import parse_file, DocumentHandler
 
 class ConsensusParser(object):
@@ -31,7 +32,7 @@ class ConsensusParser(object):
 
     def _router_is_guard(self, router):
         """Return true if the router is a guard according on its consensus flags."""
-        return 'Guard' in router.flags
+        return stem.Flag.GUARD in router.flags
 
     def parse_and_import_consensus(self, consensus_filename, db_cursor):
         """Parse consensus file and import it to the database at db_cursor"""

@@ -1,5 +1,6 @@
 import logging
 import datetime
+import sqlite3
 
 import stem
 from stem.descriptor import parse_file, DocumentHandler
@@ -56,7 +57,12 @@ class ConsensusParser(object):
 
         # XXX Protect against duplicate consensus?
         # Insert the consensus to the database
-        db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES (?)", (consensus.valid_after,))
+        try:
+            db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES (?)", (consensus.valid_after,))
+        except sqlite3.IntegrityError, err:
+            logging.warning("Didn't add duplicate consensus (%s) (%s).", consensus.valid_after, err)
+            return
+
         consensus_db_idx = db_cursor.lastrowid # note down the index of this consensus on the database
 
         """

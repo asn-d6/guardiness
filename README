@@ -30,7 +30,7 @@ $ mkdir consensus_dir summary_dir
 $ cd consensus_dir
 $ wget https://collector.torproject.org/archive/relay-descriptors/microdescs/microdescs-2014-07.tar.xz
 $ tar xvf microdescs-2014-07.tar.xz
-$ find microdescs-2014-07/consensus-microdesc/*/* -exec mv {} . \; # Get all consensuses in cwd
+$ find microdescs-2014-07/consensus-microdesc/ -type f -exec mv {} . \; # Get all consensuses in cwd
 
 And now that we have all these consensuses saved locally, it's time to run the
 guardfraction scripts:
@@ -70,3 +70,8 @@ for example here is a guardfraction output file for 9 consensuses over the past 
         guard-seen C9EBD47AEE8B7DCE24288953FA3518A56D57407D 33 3
         guard-seen BFB650BE1E42C874D97E34B45A2916FF94212600 33 3
         guard-seen 40D3E01ACC8C941788AC679F42F3C131B6E31933 11 1
+
+==Acknowledgments==
+
+Thanks to Sebastian and weasel for all the feedback and tips about
+databases!

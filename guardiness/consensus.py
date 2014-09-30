@@ -15,20 +15,23 @@ class ConsensusParser(object):
 
         'max_months' is the max number of months in the past we are willing to accept a consensus.
         """
-        # Calculate oldest valid_after value that we would accept.
+        # Calculate oldest valid_after value that we would accept
+        # given 'max_months'.  Be generous and consider 31-days
+        # months. Further filtering will be done by the guardfraction
+        # script.
         now = datetime.datetime.now()
-        max_months_in_seconds_timedelta = datetime.timedelta(0, max_months * 30 * 24 * 60 * 60)
-        self.oldest_accepted_valid_after = now - max_months_in_seconds_timedelta
+        max_months_in_seconds_timedelta = datetime.timedelta(0, max_months * 31 * 24 * 60 * 60)
+        self.oldest_acceptable_valid_after = now - max_months_in_seconds_timedelta
 
     def _check_consensus_date(self, valid_after):
         """
         Check that consensus with 'valid_after' hasn't expired.
         Raise DocumentExpired if it has.
         """
-        if valid_after < self.oldest_accepted_valid_after:
+        if valid_after < self.oldest_acceptable_valid_after:
             logging.warning("Summary file has too old valid-after: %s. " +
-                            "Earliest accepted valid-after is %s.",
-                            str(valid_after), str(self.oldest_accepted_valid_after))
+                            "Earliest acceptable valid-after is %s.",
+                            str(valid_after), str(self.oldest_acceptable_valid_after))
             raise DocumentExpired
 
     def _router_is_guard(self, router):

@@ -24,11 +24,11 @@ def populate_db_helper(db_cursor):
     """
 
     # Create the consensuses
-    db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES ('2014-07-09 04:00:00')")
+    db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES (datetime('now', '-1 day'))")
     first_consensus_idx = db_cursor.lastrowid
-    db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES ('2014-08-09 04:00:00')")
+    db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES (datetime('now', '-1 month'))")
     second_consensus_idx = db_cursor.lastrowid
-    db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES ('2014-09-09 04:00:00')")
+    db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES (datetime('now', '-1 month', '-1 hours'))")
     third_consensus_idx = db_cursor.lastrowid
 
     # Create the guards
@@ -72,6 +72,7 @@ class testGuardFraction(unittest.TestCase):
         db_conn.commit()
 
         # Now read the database using the guardfraction script.
+        # (don't care about dates. that's for the next test to worry about
         guards, consensuses_read_n = guardfraction.read_db_file(db_conn, db_cursor, 999)
 
         # Now make sure that guardfraction understood the correct data.
@@ -90,6 +91,24 @@ class testGuardFraction(unittest.TestCase):
                 self.assertEquals(guard.times_seen, 1)
             else:
                 self.assertTrue(False) # Unknown guard!
+
+        db_conn.close()
+
+    def test_guardfraction_with_old_consensus(self):
+        # Initialize the database and populate it with some test data
+        db_conn, db_cursor = sqlite_db.init_db(SQLITE_DB_FILE, SQLITE_DB_SCHEMA)
+        populate_db_helper(db_cursor)
+        db_conn.commit()
+
+        # Now read the database using the guardfraction script but
+        # only accept 1 month of measurements.
+        guards, consensuses_read_n = guardfraction.read_db_file(db_conn, db_cursor, 1)
+
+        # Make sure that the last consensus (1 month and 1 hour ago)
+        # was not considered.
+        self.assertEquals(consensuses_read_n, 2)
+
+        db_conn.close()
 
     def test_output_file(self):
         """
@@ -125,6 +144,8 @@ class testGuardFraction(unittest.TestCase):
             self.assertIn("guard-seen BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB 67 2\n", lines[2:])
             self.assertIn("guard-seen CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 33 1\n", lines[2:])
             self.assertIn("guard-seen DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD 33 1\n", lines[2:])
+
+        db_conn.close()
 
 if __name__ == '__main__':
     unittest.main()

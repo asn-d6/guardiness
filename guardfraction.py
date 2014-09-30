@@ -17,9 +17,8 @@ import guardiness.guard_ds as guard_ds
 # XXX put it in const file
 SQLITE_DB_FILE = "./guardfraction.db"
 DEFAULT_OUTPUT_FNAME = "./guardfraction.output"
-SQLITE_DB_SCHEMA = "./db_schema.sql"
 
-def read_db_file(db_conn, db_cursor, oldest_accepted_valid_after):
+def read_db_file(db_conn, db_cursor, max_months, delete_expired=False):
     """
     Read database file with 'db_cursor' and register all guards active
     in the past 'max_months'.
@@ -27,17 +26,20 @@ def read_db_file(db_conn, db_cursor, oldest_accepted_valid_after):
     Return the Guards object that kept track of the guards, and the
     number of consensuses parsed.
     """
-
     # Keeps track of the guards we've seen.
     guards = guard_ds.Guards()
 
-    # Delete old consensus measurements from the database.
-    db_cursor.execute("DELETE FROM consensus WHERE consensus_date < ?", (oldest_accepted_valid_after,))
-    db_conn.commit()
+    # The months argument to datetime() so that we filter old consensuses.
+    date_sql_parameter = "-%s months" % max_months
+
+    # If the user wants, remove old consensus measurements from the database.
+    if delete_expired:
+        db_cursor.execute("DELETE FROM consensus WHERE consensus_date < (datetime('now', ?))", (date_sql_parameter,))
+        db_conn.commit()
 
     # Now we are ready to scrap the database!
     # First, get number of consensus documents read:
-    db_cursor.execute("SELECT count(*) FROM consensus")
+    db_cursor.execute("SELECT count(*) FROM consensus WHERE consensus.consensus_date >= (datetime('now', ?))", (date_sql_parameter,))
     consensuses_read_n = int(db_cursor.fetchone()[0])
 
     logging.info("Read db file with %d consensuses info", consensuses_read_n)
@@ -49,7 +51,9 @@ def read_db_file(db_conn, db_cursor, oldest_accepted_valid_after):
         return guards, 0
 
     # Get list of guards and their guardfraction
-    db_cursor.execute("SELECT (SELECT identity FROM relay WHERE relay_id=guarddata.relay_id), count(*) FROM guarddata GROUP BY relay_id;")
+    db_cursor.execute("SELECT (SELECT identity FROM relay WHERE relay_id=guarddata.relay_id), count(*) FROM guarddata,consensus "
+                      "WHERE consensus.consensus_date >= datetime('now', ?) AND consensus.consensus_id = guarddata.consensus_id GROUP BY relay_id;",
+                      (date_sql_parameter,))
     guardfraction_list = db_cursor.fetchall()
 
     for guard_fpr, times_seen in guardfraction_list:
@@ -69,6 +73,8 @@ def parse_cmd_args():
                         help="Only consider guards active in the past max_months.")
     parser.add_argument("--db-file", type=str, default=SQLITE_DB_FILE,
                         help="Path to the guard database file.")
+    parser.add_argument("--delete-expired", action="store_true", default=False,
+                        help="Delete expired database records based on max_months.")
     parser.add_argument("-o", "--output", type=str, default=DEFAULT_OUTPUT_FNAME,
                         help="Path to place the guardfraction output file.")
 
@@ -87,15 +93,11 @@ def main():
     output_file = args.output
     max_months = args.max_months
     db_file = args.db_file
-
-    # Calculate oldest valid_after value that we would accept given max_months
-    now = datetime.datetime.now()
-    max_months_in_seconds_timedelta = datetime.timedelta(0, max_months * 30 * 24 * 60 * 60)
-    oldest_accepted_valid_after = now - max_months_in_seconds_timedelta
+    delete_expired = args.delete_expired
 
     # Read database file and calculate guardfraction
     db_conn, db_cursor = sqlite_db.init_db(db_file)
-    guards, consensuses_read_n = read_db_file(db_conn, db_cursor, oldest_accepted_valid_after)
+    guards, consensuses_read_n = read_db_file(db_conn, db_cursor, max_months, delete_expired)
 
     # Caclulate guardfraction and write output file.
     try:

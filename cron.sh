@@ -37,6 +37,7 @@ python databaser.py --db-file=$CONSENSUS_DIR/guardfraction.db $CONSENSUS_DIR/new
 mv $CONSENSUS_DIR/newest_consensus/* $CONSENSUS_DIR/all_consensus/
 
 # Calculate guardfraction
-python guardfraction.py --db-file=$CONSENSUS_DIR/guardfraction.db --output=$GUARDFRACTION_OUTPUT_FILE 3 > /dev/null
+python guardfraction.py --db-file=$CONSENSUS_DIR/guardfraction.db --output=$GUARDFRACTION_OUTPUT_FILE 90 > /dev/null
 
 # echo "[*] Done!"
+

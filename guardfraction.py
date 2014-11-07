@@ -18,10 +18,10 @@ import guardiness.guard_ds as guard_ds
 SQLITE_DB_FILE = "./guardfraction.db"
 DEFAULT_OUTPUT_FNAME = "./guardfraction.output"
 
-def read_db_file(db_conn, db_cursor, max_months, delete_expired=False):
+def read_db_file(db_conn, db_cursor, max_days, delete_expired=False):
     """
     Read database file with 'db_cursor' and register all guards active
-    in the past 'max_months'.
+    in the past 'max_days'.
 
     Return the Guards object that kept track of the guards, and the
     number of consensuses parsed.
@@ -30,7 +30,7 @@ def read_db_file(db_conn, db_cursor, max_months, delete_expired=False):
     guards = guard_ds.Guards()
 
     # The months argument to datetime() so that we filter old consensuses.
-    date_sql_parameter = "-%s months" % max_months
+    date_sql_parameter = "-%s days" % max_days
 
     # If the user wants, remove old consensus measurements from the database.
     if delete_expired:
@@ -69,12 +69,12 @@ def parse_cmd_args():
     parser = argparse.ArgumentParser("guardfraction.py",
                                       formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument("max_months", type=int,
-                        help="Only consider guards active in the past max_months.")
+    parser.add_argument("max_days", type=int,
+                        help="Only consider guards active in the past max_days.")
     parser.add_argument("--db-file", type=str, default=SQLITE_DB_FILE,
                         help="Path to the guard database file.")
     parser.add_argument("--delete-expired", action="store_true", default=False,
-                        help="Delete expired database records based on max_months.")
+                        help="Delete expired database records based on max_days.")
     parser.add_argument("-o", "--output", type=str, default=DEFAULT_OUTPUT_FNAME,
                         help="Path to place the guardfraction output file.")
 
@@ -92,17 +92,17 @@ def main():
     args = parse_cmd_args()
 
     output_file = args.output
-    max_months = args.max_months
+    max_days = args.max_days
     db_file = args.db_file
     delete_expired = args.delete_expired
 
     # Read database file and calculate guardfraction
     db_conn, db_cursor = sqlite_db.init_db(db_file)
-    guards, consensuses_read_n = read_db_file(db_conn, db_cursor, max_months, delete_expired)
+    guards, consensuses_read_n = read_db_file(db_conn, db_cursor, max_days, delete_expired)
 
     # Caclulate guardfraction and write output file.
     try:
-        guards.write_output_file(output_file, max_months, consensuses_read_n)
+        guards.write_output_file(output_file, max_days, consensuses_read_n)
     except IOError, err:
         logging.warning("Could not write output file: %s", err)
 

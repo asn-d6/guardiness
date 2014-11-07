@@ -10,29 +10,9 @@ class ConsensusParser(object):
     Singleton that parses consensuses and imports them to a database.
     """
 
-    def __init__(self, max_months):
-        """Initialize the consensus parser.
-
-        'max_months' is the max number of months in the past we are willing to accept a consensus.
-        """
-        # Calculate oldest valid_after value that we would accept
-        # given 'max_months'.  Be generous and consider 31-days
-        # months. Further filtering will be done by the guardfraction
-        # script.
-        now = datetime.datetime.now()
-        max_months_in_seconds_timedelta = datetime.timedelta(0, max_months * 31 * 24 * 60 * 60)
-        self.oldest_acceptable_valid_after = now - max_months_in_seconds_timedelta
-
-    def _check_consensus_date(self, valid_after):
-        """
-        Check that consensus with 'valid_after' hasn't expired.
-        Raise DocumentExpired if it has.
-        """
-        if valid_after < self.oldest_acceptable_valid_after:
-            logging.warning("Summary file has too old valid-after: %s. " +
-                            "Earliest acceptable valid-after is %s.",
-                            str(valid_after), str(self.oldest_acceptable_valid_after))
-            raise DocumentExpired
+    def __init__(self):
+        """Initialize the consensus parser."""
+        pass
 
     def _router_is_guard(self, router):
         """Return true if the router is a guard according on its consensus flags."""
@@ -55,10 +35,6 @@ class ConsensusParser(object):
         consensus =  parse_file(consensus_fd, 'network-status-microdesc-consensus-3 1.0',
                                 document_handler = DocumentHandler.DOCUMENT).next()
 
-        # Check that the document has not expired.
-        self._check_consensus_date(consensus.valid_after)
-
-        # XXX Protect against duplicate consensus?
         # Insert the consensus to the database
         try:
             db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES (?)", (consensus.valid_after,))
@@ -94,4 +70,3 @@ class ConsensusParser(object):
             db_cursor.execute("INSERT INTO guarddata (relay_id,consensus_id) VALUES (?,?)",
                               (relay_db_idx, consensus_db_idx))
 
-class DocumentExpired(Exception): pass

@@ -35,7 +35,7 @@ $ find microdescs-2014-07/consensus-microdesc/ -type f -exec mv {} . \; # Get al
 And now that we have all these consensuses saved locally, it's time to run the
 guardfraction scripts:
 
-$ python databaser.py --first-time guardfraction_data/consensus_dir/ 999
+$ python databaser.py --first-time guardfraction_data/consensus_dir/
 $ python guardfraction.py 999
 
 Now you should have a file named 'guardfraction.output' in the cwd that

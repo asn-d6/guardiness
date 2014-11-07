@@ -59,8 +59,7 @@ class testDatabaser(unittest.TestCase):
 
         # Import the consensus directory to the database using databaser
         db_conn, db_cursor = sqlite_db.init_db(SQLITE_DB_FILE, SQLITE_DB_SCHEMA)
-        databaser.import_consensus_dir_to_db(db_cursor, TEST_CONSENSUSES_DIR, 999,
-                                             False, False)
+        databaser.import_consensus_dir_to_db(db_cursor, TEST_CONSENSUSES_DIR, False)
         db_conn.commit()
 
         # Now parse the same consensus directory with the naive algorithm.

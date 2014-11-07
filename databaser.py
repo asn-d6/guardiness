@@ -22,8 +22,7 @@ SQLITE_DB_SCHEMA = "./db_schema.sql"
 # is 'table relays already exists'. Exiting.
 
 
-def import_consensus_dir_to_db(db_cursor, consensus_dir, max_months,
-                               delete_expired, delete_imported):
+def import_consensus_dir_to_db(db_cursor, consensus_dir, delete_imported):
     """
     Read consensus files from 'consensus_dir' and write guard activity
     to the db at 'db_cursor'.
@@ -32,7 +31,7 @@ def import_consensus_dir_to_db(db_cursor, consensus_dir, max_months,
     # Counter used to track progress.
     counter = 0
     # Initialize our singletons.
-    consensus_parser = consensus.ConsensusParser(max_months)
+    consensus_parser = consensus.ConsensusParser()
 
     # Walk all files in the directory and try to parse them as
     # consensuses to import them to our database.
@@ -46,13 +45,7 @@ def import_consensus_dir_to_db(db_cursor, consensus_dir, max_months,
         if not os.path.isfile(consensus_f): # skip non-files
             continue
 
-        try:
-            consensus_parser.parse_and_import_consensus(consensus_f, db_cursor)
-        except consensus.DocumentExpired, err:
-            logging.warning(u"Skipping expired consensus '%s'.", consensus_f)
-            if delete_expired:
-                os.remove(consensus_f)
-            continue
+        consensus_parser.parse_and_import_consensus(consensus_f, db_cursor)
 
         if delete_imported:
             os.remove(consensus_f)
@@ -63,14 +56,10 @@ def parse_cmd_args():
 
     parser.add_argument("consensus_dir", type=str,
                         help="Path to the consensus files directory.")
-    parser.add_argument("max_months", type=int,
-                        help="Consider only consensuses of the past max_months.")
     parser.add_argument("--db-file", type=str, default=SQLITE_DB_FILE,
                         help="Path to where the database file should be created .")
     parser.add_argument("--schema-file", type=str, default=SQLITE_DB_SCHEMA,
                         help="Path to the database schema file.")
-    parser.add_argument("--delete-expired", action="store_true", default=False,
-                        help="Delete consensus files older than max_months.")
     parser.add_argument("--delete-imported", action="store_true", default=False,
                         help="Delete consensus files after importing them to the database.")
     parser.add_argument("--first-time", action="store_true", default=False,
@@ -96,9 +85,7 @@ def main():
     db_file = args.db_file
     schema_file = args.schema_file
     consensus_dir = args.consensus_dir
-    delete_expired = args.delete_expired
     delete_imported = args.delete_imported
-    max_months = args.max_months
     first_time = args.first_time
 
     # Initialize sqlite3 database.
@@ -106,8 +93,7 @@ def main():
                                            schema_file if first_time else None)
 
     # Parse all consensus files
-    import_consensus_dir_to_db(db_cursor, consensus_dir, max_months,
-                               delete_expired, delete_imported)
+    import_consensus_dir_to_db(db_cursor, consensus_dir, delete_imported)
 
     logging.info("Done! Wrote database file at %s.", db_file)
 

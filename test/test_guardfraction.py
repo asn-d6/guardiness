@@ -94,22 +94,6 @@ class testGuardFraction(unittest.TestCase):
 
         db_conn.close()
 
-    def test_guardfraction_with_old_consensus(self):
-        # Initialize the database and populate it with some test data
-        db_conn, db_cursor = sqlite_db.init_db(SQLITE_DB_FILE, SQLITE_DB_SCHEMA)
-        populate_db_helper(db_cursor)
-        db_conn.commit()
-
-        # Now read the database using the guardfraction script but
-        # only accept 1 month of measurements.
-        guards, consensuses_read_n = guardfraction.read_db_file(db_conn, db_cursor, 1)
-
-        # Make sure that the last consensus (1 month and 1 hour ago)
-        # was not considered.
-        self.assertEquals(consensuses_read_n, 2)
-
-        db_conn.close()
-
     def test_output_file(self):
         """
         Using the test database again, test that the guardfraction

@@ -27,8 +27,8 @@ torify wget -q http://128.31.0.39:9131/tor/status-vote/current/consensus -O $CON
 cd $GUARDFRACTION_SRC
 
 # Import latest consensus to our database.
-# suppress any output because of cron job
-python databaser.py --db-file=$CONSENSUS_DIR/guardfraction.db $CONSENSUS_DIR/newest_consensus/ 3 > /dev/null
+# (suppress any output because of cron job)
+python databaser.py --db-file=$CONSENSUS_DIR/guardfraction.db $CONSENSUS_DIR/newest_consensus/ > /dev/null
 
 # echo "[*] Imported!"
 

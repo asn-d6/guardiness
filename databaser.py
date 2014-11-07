@@ -81,7 +81,8 @@ def parse_cmd_args():
 def main():
     """Read some consensus files and make a guard activity sqlite3 database."""
 
-    logging.getLogger("").setLevel(logging.DEBUG) # XXX
+    # Enable this if you want debug logs
+    # logging.getLogger("").setLevel(logging.DEBUG)
 
     # Parse CLI
     args = parse_cmd_args()

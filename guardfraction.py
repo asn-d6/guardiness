@@ -85,7 +85,8 @@ def main():
     Read an sqlite3 database and output guardfraction data.
     """
 
-    logging.getLogger("").setLevel(logging.DEBUG) # XXX
+    # Enable this if you want debug logs
+    # logging.getLogger("").setLevel(logging.DEBUG)
 
     # Parse CLI
     args = parse_cmd_args()

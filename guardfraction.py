@@ -10,6 +10,7 @@ import logging
 import argparse
 import sys
 import os
+import datetime
 
 import guardiness.sqlite_db as sqlite_db
 import guardiness.guard_ds as guard_ds
@@ -65,6 +66,38 @@ def read_db_file(db_conn, db_cursor, max_days, delete_expired=False):
 
     return guards, consensuses_read_n
 
+def find_missing_hours_from_list(date_list):
+    """Given a list of datetimes, find which hours are missing."""
+    hours_gap = (date_list[-1]-date_list[0]).total_seconds()/(60*60)
+
+    all_hours_set = set(date_list[0]+ datetime.timedelta(hours=x) for x in range(int(hours_gap)))
+
+    missing = sorted(all_hours_set - set(date_list))
+
+    return missing
+
+
+def print_missing_consensuses(db_conn, db_cursor, max_days):
+    # The days argument to datetime() so that we filter old consensuses.
+    date_sql_parameter = "-%s days" % max_days
+
+    db_cursor.execute("SELECT consensus.consensus_date FROM consensus WHERE consensus.consensus_date >= (datetime('now', ?))", (date_sql_parameter,))
+    sql_date_list = db_cursor.fetchall()
+
+    # Get all the dates in a list
+    consensus_date_list = []
+    for date in sql_date_list:
+        date_datetime = datetime.datetime.strptime(date[0], "%Y-%m-%d %H:%M:%S")
+        consensus_date_list.append(date_datetime)
+    logging.debug("These are all the dates we have: %s", str(consensus_date_list))
+
+    # Find the missing hours and print them.
+    missing_list = find_missing_hours_from_list(consensus_date_list)
+
+    print "Here is a list of the missing consensuses:"
+    for missing in missing_list:
+        print "%s" % missing
+
 def parse_cmd_args():
     parser = argparse.ArgumentParser("guardfraction.py",
                                       formatter_class = argparse.ArgumentDefaultsHelpFormatter)
@@ -77,6 +110,8 @@ def parse_cmd_args():
                         help="Delete expired database records based on max_days.")
     parser.add_argument("-o", "--output", type=str, default=DEFAULT_OUTPUT_FNAME,
                         help="Path to place the guardfraction output file.")
+    parser.add_argument("-m", "--list-missing", action="store_true", default=False,
+                        help="List any missing consensuses from the db and exit.")
 
     return parser.parse_args()
 
@@ -95,9 +130,16 @@ def main():
     max_days = args.max_days
     db_file = args.db_file
     delete_expired = args.delete_expired
+    list_missing = args.list_missing
 
     # Read database file and calculate guardfraction
     db_conn, db_cursor = sqlite_db.init_db(db_file)
+
+    # Just print missing consensuses and bail
+    if list_missing:
+        print_missing_consensuses(db_conn, db_cursor, max_days)
+        sys.exit(1)
+
     guards, consensuses_read_n = read_db_file(db_conn, db_cursor, max_days, delete_expired)
 
     # Caclulate guardfraction and write output file.

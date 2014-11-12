@@ -5,6 +5,8 @@ import guardiness.sqlite_db as sqlite_db
 import tempfile
 import guardfraction
 
+from datetime import datetime, timedelta
+
 SQLITE_DB_FILE = ":memory:"
 SQLITE_DB_SCHEMA = "./db_schema.sql"
 
@@ -60,6 +62,30 @@ def populate_db_helper(db_cursor):
                       (first_guard_idx, third_consensus_idx))
     db_cursor.execute("INSERT INTO guarddata (relay_id,consensus_id) VALUES (?,?)",
                       (fourth_guard_idx, third_consensus_idx))
+
+class testMissingConsensuses(unittest.TestCase):
+    def test_missing_hours_from_list(self):
+        # Only 23/02/2012 11:00 is missing
+        hours_list = [datetime(2010,2,23,10), datetime(2010,2,23,12)]
+        missing_list = guardfraction.find_missing_hours_from_list(hours_list)
+        self.assertEquals(missing_list, [datetime(2010,2,23,11)])
+
+        # Hours between 01:00 to next day 02:00 are missing
+        hours_list = [datetime(2014,4,20,1), datetime(2014,4,21,2)]
+        missing_list = guardfraction.find_missing_hours_from_list(hours_list)
+        self.assertEquals(missing_list,
+                          [datetime(2014,4,20,2), datetime(2014,4,20,3),
+                           datetime(2014,4,20,4), datetime(2014,4,20,5),
+                           datetime(2014,4,20,6), datetime(2014,4,20,7),
+                           datetime(2014,4,20,8), datetime(2014,4,20,9),
+                           datetime(2014,4,20,10), datetime(2014,4,20,11),
+                           datetime(2014,4,20,12), datetime(2014,4,20,13),
+                           datetime(2014,4,20,14), datetime(2014,4,20,15),
+                           datetime(2014,4,20,16), datetime(2014,4,20,17),
+                           datetime(2014,4,20,18), datetime(2014,4,20,19),
+                           datetime(2014,4,20,20), datetime(2014,4,20,21),
+                           datetime(2014,4,20,22), datetime(2014,4,20,23),
+                           datetime(2014,4,21,0), datetime(2014,4,21,1)])
 
 
 class testGuardFraction(unittest.TestCase):

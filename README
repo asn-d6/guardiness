@@ -41,6 +41,10 @@ $ python guardfraction.py 999
 Now you should have a file named 'guardfraction.output' in the cwd that
 is meant to be read by little-t-tor.
 
+Unittests can be run by running this in the top dir:
+$ export PYTHON_PATH=`pwd`
+$ python -m unittest discover test/
+
 ==Dependencies==
 
 stem is needed.

@@ -121,7 +121,7 @@ class testGuardFraction(unittest.TestCase):
             self.assertEquals(len(lines), 6)
 
             # Test the n-inputs line
-            self.assertEquals(lines[1], "n-inputs 3 999\n")
+            self.assertEquals(lines[1], "n-inputs 3 999 23976\n")
 
             # Test guard lines
             self.assertIn("guard-seen AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 100 3\n", lines[2:])

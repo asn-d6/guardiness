@@ -50,7 +50,7 @@ stem is needed.
 This is the format of the guardfraction output file:
 
         written-at <date and time>
-        n-inputs <number of consesuses parsed> <number of months considered>
+        n-inputs <number of consesuses parsed> <number of days considered> <ideal number of consensuses>
 
         guard-seen <guard fpr 1> <guardfraction percentage> <number of consensus appearances>
         guard-seen <guard fpr 2> <guardfraction percentage> <number of consensus appearances>
@@ -59,10 +59,10 @@ This is the format of the guardfraction output file:
         guard-seen <guard fpr 5> <guardfraction percentage> <number of consensus appearances>
         ...
 
-for example here is a guardfraction output file for 9 consensuses over the past 3 months:
+for example here is a guardfraction output file for 9 consensuses over the past 3 days:
 
 		written-at 2014-09-23 22:48:00.574353
-		n-inputs 9 3
+		n-inputs 9 3 72
 		guard-seen 4BD87C848E4DB3E10B759B8DC18D1294A715DAC4 100 9
 		guard-seen D0EDB47BEAD32D26D0A837F7D5357EC3AD3B8777 100 9
 		guard-seen 95B32375D0AC1CF6ABE3E1A8584DD5ADB3FACA60 100 9

@@ -39,7 +39,7 @@ class ConsensusParser(object):
         try:
             db_cursor.execute("INSERT INTO consensus (consensus_date) VALUES (?)", (consensus.valid_after,))
         except sqlite3.IntegrityError, err:
-            logging.warning("Didn't add duplicate consensus (%s) (%s).", consensus.valid_after, err)
+            logging.info("Didn't add duplicate consensus (%s) (%s).", consensus.valid_after, err)
             return
 
         consensus_db_idx = db_cursor.lastrowid # note down the index of this consensus on the database

@@ -132,6 +132,12 @@ def main():
     delete_expired = args.delete_expired
     list_missing = args.list_missing
 
+    # Make sure that max_days is a positive integer but not too
+    # positive. The maximum value is currently set to 5 years.
+    if max_days <= 0 or max_days > (5*12*30):
+        logging.warning("Bad max_days value (%d)", max_days)
+        sys.exit(2)
+
     # Read database file and calculate guardfraction
     db_conn, db_cursor = sqlite_db.init_db(db_file)
 

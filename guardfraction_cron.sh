@@ -10,8 +10,17 @@ GUARDFRACTION_SRC=/home/user/guardiness/
 # Where the consensuses and data are going to be stored
 STATE_DIR=/home/user/test/consensus_dir
 
-# Where the guardfraction output file should be placed (Change it!)
+#################################
+
+
+# Where the guardfraction output file should be placed.
 GUARDFRACTION_OUTPUT_FILE=$STATE_DIR/guardfraction.output
+
+# Where the newest consensus should be placed.
+NEWEST_CONSENSUS_DIR=$STATE_DIR/newest_consensus/
+
+# Where the old consensuses should be placed.
+CONSENSUS_ARCHIVE_DIR=$STATE_DIR/all_consensus/
 
 # Use flock to avoid parallel runs of the script
 exec 9< "$STATE_DIR"
@@ -21,13 +30,20 @@ if ! flock -n -e 9; then
 fi
 
 # Create dir structure if it doesn't exist
-mkdir -p $STATE_DIR/newest_consensus/
-mkdir -p $STATE_DIR/all_consensus/
+mkdir -p $NEWEST_CONSENSUS_DIR
+mkdir -p $CONSENSUS_ARCHIVE_DIR
 
 # Download latest consensus.
-# XXX Should we clean the newest consensus dir first?
 # XXX Replace this with a cp from DataDirectory or something.
-torify wget -q http://128.31.0.39:9131/tor/status-vote/current/consensus -O $STATE_DIR/newest_consensus/consensus_`date +"%Y%m%d-%H%M%S"` > /dev/null
+# XXX cp $DATA_DIRECTORY/cached-microdesc-consensus $NEWEST_CONSENSUS_DIR/consensus_`date +"%Y%m%d-%H%M%S"`
+torify wget -q http://128.31.0.39:9131/tor/status-vote/current/consensus -O $NEWEST_CONSENSUS_DIR/consensus_`date +"%Y%m%d-%H%M%S"` > /dev/null
+
+# Bail on error
+if [ $? != 0 ]
+then
+    echo "Failed while getting newest consensus."
+    exit 1
+fi
 
 # echo "[*] Downloaded latest consensus"
 
@@ -35,16 +51,30 @@ cd $GUARDFRACTION_SRC
 
 # Import latest consensus to our database.
 # (suppress any output because of cron job)
-python databaser.py --db-file=$STATE_DIR/guardfraction.db $STATE_DIR/newest_consensus/ > /dev/null
+python databaser.py --db-file=$STATE_DIR/guardfraction.db $NEWEST_CONSENSUS_DIR > /dev/null
+
+# Bail on error
+if [ $? != 0 ]
+then
+    echo "Failed during database import."
+    exit 1
+fi
 
 # echo "[*] Imported!"
 
 # Move latest consensus to old consensuses dir
 # XXX Do we even want to keep the old consensus around?
-mv $STATE_DIR/newest_consensus/* $STATE_DIR/all_consensus/
+mv $NEWEST_CONSENSUS_DIR/* $CONSENSUS_ARCHIVE_DIR
 
 # Calculate guardfraction
 python guardfraction.py --db-file=$STATE_DIR/guardfraction.db --output=$GUARDFRACTION_OUTPUT_FILE 90 > /dev/null
+
+# Bail on error
+if [ $? != 0 ]
+then
+    echo "Failed during guardfraction calculation."
+    exit 1
+fi
 
 # echo "[*] Done!"
 

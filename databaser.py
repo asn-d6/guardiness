@@ -88,6 +88,11 @@ def main():
     delete_imported = args.delete_imported
     first_time = args.first_time
 
+    # If there is no database file, assume that this is our first time
+    # getting run.
+    if not os.path.exists(db_file):
+        first_time = True
+
     # Initialize sqlite3 database.
     db_conn, db_cursor = sqlite_db.init_db(db_file,
                                            schema_file if first_time else None)

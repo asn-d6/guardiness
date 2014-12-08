@@ -19,6 +19,8 @@ import guardiness.guard_ds as guard_ds
 SQLITE_DB_FILE = "./guardfraction.db"
 DEFAULT_OUTPUT_FNAME = "./guardfraction.output"
 
+class DesynchronizedClock(Exception): pass
+
 def read_db_file(db_conn, db_cursor, max_days, delete_expired=False):
     """
     Read database file with 'db_cursor' and register all guards active
@@ -115,6 +117,22 @@ def parse_cmd_args():
 
     return parser.parse_args()
 
+def check_clock_correctness(db_cursor):
+    """
+    Check that our current time is not too desynchronized, compared to
+    the time of the consensuses in our database.
+    """
+
+    # Get the latest consensus from the database and make sure it
+    # happened in the past.
+    db_cursor.execute("SELECT max(consensus_date) FROM consensus")
+    latest_date_in_db = db_cursor.fetchone()[0]
+    latest_date_in_db = datetime.datetime.strptime(latest_date_in_db, "%Y-%m-%d %H:%M:%S")
+
+    if datetime.datetime.now() < latest_date_in_db:
+        raise DesynchronizedClock("Current time is in the past (%s compared to %s)" %
+                                  (datetime.datetime.now(), latest_date_in_db))
+
 def main():
     """
     Read an sqlite3 database and output guardfraction data.
@@ -144,6 +162,13 @@ def main():
     # Just print missing consensuses and bail
     if list_missing:
         print_missing_consensuses(db_conn, db_cursor, max_days)
+        sys.exit(1)
+
+    # Make sure that our clock is not horribly desynchronized.
+    try:
+        check_clock_correctness(db_cursor)
+    except DesynchronizedClock, err:
+        logging.warning("Clock issue (%s). Exiting.", err)
         sys.exit(1)
 
     guards, consensuses_read_n = read_db_file(db_conn, db_cursor, max_days, delete_expired)

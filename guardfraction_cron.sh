@@ -39,7 +39,7 @@ mkdir -p "$CONSENSUS_ARCHIVE_DIR"
 # Download latest consensus.
 # XXX Replace this with a cp from DataDirectory or something.
 # XXX cp "$DATA_DIRECTORY/cached-microdesc-consensus" "$NEWEST_CONSENSUS_DIR/consensus_`date +"%Y%m%d-%H%M%S"`"
-torify wget -q http://128.31.0.39:9131/tor/status-vote/current/consensus -O "$NEWEST_CONSENSUS_DIR/consensus_$(date +"%Y%m%d-%H%M%S")" > /dev/null
+torify wget -q http://128.31.0.39:9131/tor/status-vote/current/consensus -O "$NEWEST_CONSENSUS_DIR/consensus_$(date +"%Y%m%d-%H%M%S")"
 
 # Bail on error
 if [ "$?" != 0 ]
@@ -54,7 +54,7 @@ cd "$GUARDFRACTION_SRC"
 
 # Import latest consensus to our database.
 # (suppress any output because of cron job)
-python databaser.py --db-file="$STATE_DIR/guardfraction.db" "$NEWEST_CONSENSUS_DIR" > /dev/null
+python databaser.py --db-file="$STATE_DIR/guardfraction.db" "$NEWEST_CONSENSUS_DIR"
 
 # Bail on error
 if [ "$?" != 0 ]
@@ -70,7 +70,7 @@ fi
 mv "$NEWEST_CONSENSUS_DIR"/* "$CONSENSUS_ARCHIVE_DIR"
 
 # Calculate guardfraction
-python guardfraction.py --db-file="$STATE_DIR/guardfraction.db" --output="$GUARDFRACTION_OUTPUT_FILE" "$DAYS_WORTH" > /dev/null
+python guardfraction.py --db-file="$STATE_DIR/guardfraction.db" --output="$GUARDFRACTION_OUTPUT_FILE" "$DAYS_WORTH"
 
 # Bail on error
 if [ "$?" != 0 ]

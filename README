@@ -20,6 +20,26 @@ deployment. Then, before every voting period, the dirauth operators
 should also feed the databaser script with the latest consensus. A
 cron script will be used to do this.
 
+==How to use in directory authority==
+
+To use this script on your directory authority, you will want to setup
+a cron job that calls the guardfraction_cron.sh periodically. You want
+it to be called once per hour, so that it fetches all new consensuses
+and so that the guardfraction file gets generated before the hourly
+voting session.
+
+Please take a look at the cron script and modify the constants to fit
+your filesystem structure.
+
+As an example, here is a crontab line that will call the script in the
+20th minute of every hour:
+
+    20 * * * * sh /home/user/guardiness/guardfraction_cron.sh >/dev/null
+
+You might also want to use the 'cronic' utility as a better way to
+detect cron script errors. In Debian. you can find it in the moreutils
+package.
+
 ==Example usage==
 
 Put all your md consensuses in consensus_dir/. You can get yours from

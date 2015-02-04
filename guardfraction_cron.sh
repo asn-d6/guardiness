@@ -17,15 +17,19 @@ STATE_DIR="$GUARDFRACTION_SRC/var"
 WGET_PREFIX=""
 #WGET_PREFIX="torify"
 CONSENSUS_SOURCE="http://128.31.0.39:9131/tor/status-vote/current/consensus"
-
 DAYS_WORTH=90
+GUARDFRACTION_OUTPUT_FILE="" # defaults to :$STATE_DIR/guardfraction.output
+VERBOSE=0
+
+# You can override any of the above variables in ~/.guardfraction.conf
+[ -e ~/.guardfraction.conf ] && . ~/.guardfraction.conf
 
 if ! [ -d "$STATE_DIR" ]; then
         mkdir "$STATE_DIR"
 fi
 
 # Where the guardfraction output file should be placed.
-GUARDFRACTION_OUTPUT_FILE="$STATE_DIR/guardfraction.output"
+GUARDFRACTION_OUTPUT_FILE="${GUARDFRACTION_OUTPUT_FILE:$STATE_DIR/guardfraction.output}"
 
 # Use flock to avoid parallel runs of the script
 exec 9< "$STATE_DIR"

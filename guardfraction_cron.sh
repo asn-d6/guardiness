@@ -5,11 +5,8 @@ set -e
 
 # This script is run every hour. It gets the latest consensus, imports
 # it to the database and outputs a guardfraction output file.
-# Please edit the definitions below to your liking:
 
-# Where the consensuses and data are going to be stored
-
-#################################
+##################################################################
 
 GUARDFRACTION_SRC=$(dirname "$0")
 GUARDFRACTION_SRC=$(readlink -f "$GUARDFRACTION_SRC")
@@ -25,6 +22,9 @@ VERBOSE=${VERBOSE:-0}
 
 # You can override any of the above variables in ~/.guardfraction.conf
 [ -e ~/.guardfraction.conf ] && . ~/.guardfraction.conf
+
+##################################################################
+
 [ "$VERBOSE" -gt 1 ] &&  set -x
 
 STATE_DIR="${STATE_DIR:-$GUARDFRACTION_SRC/var}"

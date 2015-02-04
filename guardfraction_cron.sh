@@ -22,9 +22,6 @@ GUARDFRACTION_OUTPUT_FILE="$STATE_DIR/guardfraction.output"
 # Where the newest consensus should be placed.
 NEWEST_CONSENSUS_DIR="$STATE_DIR/newest_consensus/"
 
-# Where the old consensuses should be placed.
-CONSENSUS_ARCHIVE_DIR="$STATE_DIR/all_consensus/"
-
 # Use flock to avoid parallel runs of the script
 exec 9< "$STATE_DIR"
 if ! flock -n -e 9; then
@@ -34,7 +31,6 @@ fi
 
 # Create dir structure if it doesn't exist
 mkdir -p "$NEWEST_CONSENSUS_DIR"
-mkdir -p "$CONSENSUS_ARCHIVE_DIR"
 
 # Download latest consensus.
 # XXX Replace this with a cp from DataDirectory or something.
@@ -67,7 +63,7 @@ fi
 
 # Move latest consensus to old consensuses dir
 # XXX Do we even want to keep the old consensus around?
-mv "$NEWEST_CONSENSUS_DIR"/* "$CONSENSUS_ARCHIVE_DIR"
+rm "$NEWEST_CONSENSUS_DIR"/*
 
 # Calculate guardfraction
 python guardfraction.py --db-file="$STATE_DIR/guardfraction.db" --output="$GUARDFRACTION_OUTPUT_FILE" "$DAYS_WORTH"

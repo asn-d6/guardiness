@@ -7,12 +7,12 @@ set -u
 # Please edit the definitions below to your liking:
 
 # Where the consensuses and data are going to be stored
-STATE_DIR=/home/user/test/consensus_dir
 
 #################################
 
 GUARDFRACTION_SRC=$(dirname "$0")
 GUARDFRACTION_SRC=$(readlink -f "$GUARDFRACTION_SRC")
+STATE_DIR="$GUARDFRACTION_SRC/var"
 
 DAYS_WORTH=90
 

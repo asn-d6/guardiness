@@ -16,6 +16,10 @@ STATE_DIR="$GUARDFRACTION_SRC/var"
 
 DAYS_WORTH=90
 
+if ! [ -d "$STATE_DIR" ]; then
+        mkdir "$STATE_DIR"
+fi
+
 # Where the guardfraction output file should be placed.
 GUARDFRACTION_OUTPUT_FILE="$STATE_DIR/guardfraction.output"
 

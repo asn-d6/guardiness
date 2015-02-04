@@ -6,13 +6,13 @@ set -u
 # it to the database and outputs a guardfraction output file.
 # Please edit the definitions below to your liking:
 
-# Where the guardfraction python script topdir is.
-GUARDFRACTION_SRC=/home/user/guardiness/
-
 # Where the consensuses and data are going to be stored
 STATE_DIR=/home/user/test/consensus_dir
 
 #################################
+
+GUARDFRACTION_SRC=$(dirname "$0")
+GUARDFRACTION_SRC=$(readlink -f "$GUARDFRACTION_SRC")
 
 DAYS_WORTH=90
 

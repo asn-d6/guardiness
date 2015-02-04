@@ -26,7 +26,7 @@ GUARDFRACTION_OUTPUT_FILE="$STATE_DIR/guardfraction.output"
 # Use flock to avoid parallel runs of the script
 exec 9< "$STATE_DIR"
 if ! flock -n -e 9; then
-        echo >&5 "LOCK-ERROR"
+        echo >&2 "LOCK-ERROR"
         exit 1
 fi
 

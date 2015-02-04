@@ -143,17 +143,21 @@ class testGuardFraction(unittest.TestCase):
         with open(temp_path) as test_fd:
             lines = test_fd.readlines()
 
-            # One line for the header, one line for n-inputs and 4 guards
-            self.assertEquals(len(lines), 6)
+            # One line for the file version, one line for date, one
+            # line for n-inputs and 4 guards.
+            self.assertEquals(len(lines), 7)
+
+            self.assertEquals(lines[0][:26], "guardfraction-file-version")
+            self.assertEquals(lines[1][:10], "written-at")
 
             # Test the n-inputs line
-            self.assertEquals(lines[1], "n-inputs 3 999 23976\n")
+            self.assertEquals(lines[2], "n-inputs 3 999 23976\n")
 
             # Test guard lines
-            self.assertIn("guard-seen AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 100 3\n", lines[2:])
-            self.assertIn("guard-seen BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB 67 2\n", lines[2:])
-            self.assertIn("guard-seen CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 33 1\n", lines[2:])
-            self.assertIn("guard-seen DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD 33 1\n", lines[2:])
+            self.assertIn("guard-seen AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 100 3\n", lines[3:])
+            self.assertIn("guard-seen BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB 67 2\n", lines[3:])
+            self.assertIn("guard-seen CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 33 1\n", lines[3:])
+            self.assertIn("guard-seen DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD 33 1\n", lines[3:])
 
         db_conn.close()
 

@@ -60,10 +60,12 @@ class Guards(object):
 
         Might raise IOError.
         """
+        now = datetime.datetime.now() # get the current date
+        now = now.replace(microsecond=0) # leave out the microsecond part
+
         with open(output_fname, 'w+') as f:
             f_str = ""
 
-            now = datetime.datetime.now()
             f_str += "guardfraction-file-version 1\n"
             f_str += "written-at %s\n" % now.isoformat(sep=" ") # separate year from time with space
             f_str += "n-inputs %d %d %d\n" % (consensuses_read_n, max_days, max_days*24)

@@ -19,7 +19,7 @@ WGET_PREFIX=""
 CONSENSUS_SOURCE="http://128.31.0.39:9131/tor/status-vote/current/consensus"
 DAYS_WORTH=90
 GUARDFRACTION_OUTPUT_FILE="" # defaults to :$STATE_DIR/guardfraction.output
-VERBOSE=0
+VERBOSE=${VERBOSE:0}
 
 # You can override any of the above variables in ~/.guardfraction.conf
 [ -e ~/.guardfraction.conf ] && . ~/.guardfraction.conf
@@ -48,7 +48,7 @@ then
     exit 1
 fi
 
-# echo "[*] Downloaded latest consensus"
+[ "$VERBOSE" -gt 0 ] &&  echo "[*] Downloaded latest consensus"
 
 cd "$GUARDFRACTION_SRC"
 
@@ -60,7 +60,7 @@ then
     exit 1
 fi
 
-# echo "[*] Imported!"
+[ "$VERBOSE" -gt 0 ] && echo "[*] Imported!"
 
 # Calculate guardfraction
 if ! python guardfraction.py --db-file="$STATE_DIR/guardfraction.db" --output="$GUARDFRACTION_OUTPUT_FILE" "$DAYS_WORTH"
@@ -69,5 +69,4 @@ then
     exit 1
 fi
 
-# echo "[*] Done!"
-
+[ "$VERBOSE" -gt 0 ] && echo "[*] Done!"

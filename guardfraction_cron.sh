@@ -14,6 +14,9 @@ set -e
 GUARDFRACTION_SRC=$(dirname "$0")
 GUARDFRACTION_SRC=$(readlink -f "$GUARDFRACTION_SRC")
 STATE_DIR="$GUARDFRACTION_SRC/var"
+WGET_PREFIX=""
+#WGET_PREFIX="torify"
+CONSENSUS_SOURCE="http://128.31.0.39:9131/tor/status-vote/current/consensus"
 
 DAYS_WORTH=90
 
@@ -35,7 +38,7 @@ tmpdir=`mktemp -d "/tmp/guardfraction-XXXXXX"`
 trap "rm -rf '$tmpdir'" EXIT
 
 # Download latest consensus.
-if ! torify wget -q http://128.31.0.39:9131/tor/status-vote/current/consensus -O "$tmpdir/consensus"
+if ! $WGET_PREFIX wget -q "$CONSENSUS_SOURCE" -O "$tmpdir/consensus"
 then
     echo >&2 "Failed while getting newest consensus."
     exit 1

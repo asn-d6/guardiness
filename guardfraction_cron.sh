@@ -13,23 +13,26 @@ set -e
 
 GUARDFRACTION_SRC=$(dirname "$0")
 GUARDFRACTION_SRC=$(readlink -f "$GUARDFRACTION_SRC")
-STATE_DIR="$GUARDFRACTION_SRC/var"
-WGET_PREFIX=""
-#WGET_PREFIX="torify"
-CONSENSUS_SOURCE="http://128.31.0.39:9131/tor/status-vote/current/consensus"
-DAYS_WORTH=90
+STATE_DIR="" # defaults to $GUARDFRACTION_SRC/var
 GUARDFRACTION_OUTPUT_FILE="" # defaults to :$STATE_DIR/guardfraction.output
-VERBOSE=${VERBOSE:0}
+
+WGET_PREFIX="" # one option might be "torify"
+CONSENSUS_SOURCE="http://128.31.0.39:9131/tor/status-vote/current/consensus"
+
+DAYS_WORTH=90
+
+VERBOSE=${VERBOSE:-0}
 
 # You can override any of the above variables in ~/.guardfraction.conf
 [ -e ~/.guardfraction.conf ] && . ~/.guardfraction.conf
+[ "$VERBOSE" -gt 1 ] &&  set -x
+
+STATE_DIR="${STATE_DIR:-$GUARDFRACTION_SRC/var}"
+GUARDFRACTION_OUTPUT_FILE="${GUARDFRACTION_OUTPUT_FILE:-$STATE_DIR/guardfraction.output}"
 
 if ! [ -d "$STATE_DIR" ]; then
         mkdir "$STATE_DIR"
 fi
-
-# Where the guardfraction output file should be placed.
-GUARDFRACTION_OUTPUT_FILE="${GUARDFRACTION_OUTPUT_FILE:$STATE_DIR/guardfraction.output}"
 
 # Use flock to avoid parallel runs of the script
 exec 9< "$STATE_DIR"

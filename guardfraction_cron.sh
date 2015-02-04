@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -u
+set -e
 
 # This script is run every hour. It gets the latest consensus, imports
 # it to the database and outputs a guardfraction output file.
@@ -34,10 +35,7 @@ tmpdir=`mktemp -d "/tmp/guardfraction-XXXXXX"`
 trap "rm -rf '$tmpdir'" EXIT
 
 # Download latest consensus.
-torify wget -q http://128.31.0.39:9131/tor/status-vote/current/consensus -O "$tmpdir/consensus"
-
-# Bail on error
-if [ "$?" != 0 ]
+if ! torify wget -q http://128.31.0.39:9131/tor/status-vote/current/consensus -O "$tmpdir/consensus"
 then
     echo >&2 "Failed while getting newest consensus."
     exit 1
@@ -49,10 +47,7 @@ cd "$GUARDFRACTION_SRC"
 
 # Import latest consensus to our database.
 # (suppress any output because of cron job)
-python databaser.py --db-file="$STATE_DIR/guardfraction.db" "$tmpdir"
-
-# Bail on error
-if [ "$?" != 0 ]
+if ! python databaser.py --db-file="$STATE_DIR/guardfraction.db" "$tmpdir"
 then
     echo >&2 "Failed during database import."
     exit 1
@@ -61,10 +56,7 @@ fi
 # echo "[*] Imported!"
 
 # Calculate guardfraction
-python guardfraction.py --db-file="$STATE_DIR/guardfraction.db" --output="$GUARDFRACTION_OUTPUT_FILE" "$DAYS_WORTH"
-
-# Bail on error
-if [ "$?" != 0 ]
+if ! python guardfraction.py --db-file="$STATE_DIR/guardfraction.db" --output="$GUARDFRACTION_OUTPUT_FILE" "$DAYS_WORTH"
 then
     echo >&2 "Failed during guardfraction calculation."
     exit 1

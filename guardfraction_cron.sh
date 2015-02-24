@@ -8,22 +8,39 @@ set -e
 
 ##################################################################
 
+# Source directory of this script
 GUARDFRACTION_SRC=$(dirname "$0")
 GUARDFRACTION_SRC=$(readlink -f "$GUARDFRACTION_SRC")
-STATE_DIR="" # defaults to $GUARDFRACTION_SRC/var
-GUARDFRACTION_OUTPUT_FILE="" # defaults to :$STATE_DIR/guardfraction.output
+
+# Directory where the database and output of this script will be saved
+# on. Make sure you have write access to it. Defaults to $GUARDFRACTION_SRC/var .
+STATE_DIR=""
+
+# Filename of the output file. This is the file that Tor should read.
+# Defaults to: $STATE_DIR/guardfraction.output
+GUARDFRACTION_OUTPUT_FILE=""
 
 WGET_PREFIX="" # one option might be "torify"
+
+# Where to fetch the consensus from. This should be set in the
+# configuration file. Please set it to something like:
+# CONSENSUS_SOURCE=http://128.31.0.39:9131/tor/status-vote/current/consensus
 CONSENSUS_SOURCE=""
 
+# How many days of consensuses should we consider? This should be
+# equal to the guard lifetime period. Leave it as is for now.
 DAYS_WORTH=90
 
+# Set to 1 if you want verbose output.
 VERBOSE=${VERBOSE:-0}
 
-# You can override any of the above variables in ~/.guardfraction.conf
+# Please override CONSENSUS_SOURCE and any other of the above
+# variables in ~/.guardfraction.conf .
 [ -e ~/.guardfraction.conf ] && . ~/.guardfraction.conf
 
 ##################################################################
+
+[ "$VERBOSE" -gt 0 ] &&  echo "[*] Starting up"
 
 if [ -z "$CONSENSUS_SOURCE" ]; then
     echo >&2 "No CONSENSUS_SOURCE set. Please set CONSENSUS_SOURCE in ~/.guardfraction.conf."
@@ -49,6 +66,8 @@ fi
 
 tmpdir=`mktemp -d "/tmp/guardfraction-XXXXXX"`
 trap "rm -rf '$tmpdir'" EXIT
+
+[ "$VERBOSE" -gt 0 ] &&  echo "[*] About to download consensus"
 
 # Download latest consensus.
 if ! $WGET_PREFIX wget -q "$CONSENSUS_SOURCE" -O "$tmpdir/consensus"

@@ -60,7 +60,7 @@ class Guards(object):
 
         Might raise IOError.
         """
-        now = datetime.datetime.now() # get the current date
+        now = datetime.datetime.utcnow() # get the current date
         now = now.replace(microsecond=0) # leave out the microsecond part
 
         with open(output_fname, 'w+') as f:

@@ -129,9 +129,9 @@ def check_clock_correctness(db_cursor):
     latest_date_in_db = db_cursor.fetchone()[0]
     latest_date_in_db = datetime.datetime.strptime(latest_date_in_db, "%Y-%m-%d %H:%M:%S")
 
-    if datetime.datetime.now() < latest_date_in_db:
+    if datetime.datetime.utcnow() < latest_date_in_db:
         raise DesynchronizedClock("Current time is in the past (%s compared to %s)" %
-                                  (datetime.datetime.now(), latest_date_in_db))
+                                  (datetime.datetime.utcnow(), latest_date_in_db))
 
 def main():
     """

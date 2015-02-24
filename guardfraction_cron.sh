@@ -14,7 +14,7 @@ STATE_DIR="" # defaults to $GUARDFRACTION_SRC/var
 GUARDFRACTION_OUTPUT_FILE="" # defaults to :$STATE_DIR/guardfraction.output
 
 WGET_PREFIX="" # one option might be "torify"
-CONSENSUS_SOURCE="http://128.31.0.39:9131/tor/status-vote/current/consensus"
+CONSENSUS_SOURCE=""
 
 DAYS_WORTH=90
 
@@ -24,6 +24,12 @@ VERBOSE=${VERBOSE:-0}
 [ -e ~/.guardfraction.conf ] && . ~/.guardfraction.conf
 
 ##################################################################
+
+if [ -z "$CONSENSUS_SOURCE" ]; then
+    echo >&2 "No CONSENSUS_SOURCE set. Please set CONSENSUS_SOURCE in ~/.guardfraction.conf."
+    echo >&2 " e.g.  CONSENSUS_SOURCE=http://128.31.0.39:9131/tor/status-vote/current/consensus"
+    exit 1
+fi
 
 [ "$VERBOSE" -gt 1 ] &&  set -x
 
